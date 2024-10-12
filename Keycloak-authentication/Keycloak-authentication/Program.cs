@@ -9,7 +9,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = "Keycloak";
+    options.DefaultChallengeScheme = "Keycloak"; // Keycloak is used for external authentication challenges
 })
     .AddCookie()
     .AddOpenIdConnect("Keycloak", options =>
@@ -21,19 +21,23 @@ builder.Services.AddAuthentication(options =>
         options.SaveTokens = true;
         options.GetClaimsFromUserInfoEndpoint = true;
         options.CallbackPath = builder.Configuration["Authentication:Keycloak:CallbackPath"];
-        options.RequireHttpsMetadata = false; // Allow HTTP in development
+        options.RequireHttpsMetadata = false; // Development mode allows HTTP
     });
 
 // Add services to the container.
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.SameSite = SameSiteMode.None; // Important to avoid cookie issues
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Enforce HTTPS
+});
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -42,7 +46,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication();
+app.UseAuthentication(); // Enable authentication
 app.UseAuthorization();
 
 app.MapControllerRoute(

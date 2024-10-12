@@ -33,7 +33,7 @@ namespace Keycloak_authentication.Controllers
 
         public IActionResult Login()
         {
-            return Challenge(new AuthenticationProperties { RedirectUri = "/" }, OpenIdConnectDefaults.AuthenticationScheme);
+            return Challenge(new AuthenticationProperties { RedirectUri = "/" }, "Keycloak");
         }
 
     }
